@@ -5,8 +5,8 @@ on:
     types: [opened, reopened, synchronize]
 
 jobs:
-  permissions: write-all
   check-migrations:
+    permissions: write-all
     runs-on: ubuntu-latest
 
     steps:
