@@ -6,6 +6,7 @@ on:
 
 jobs:
   compare-branches:
+    runs-on: ubuntu-latest
     steps:
       - name: Run check migrations action
         uses: ./.github/actions/validateMigrations
