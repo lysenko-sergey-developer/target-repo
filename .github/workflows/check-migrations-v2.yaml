@@ -5,6 +5,7 @@ on:
     types: [opened, reopened, synchronize]
 
 jobs:
+  permissions: write-all
   check-migrations:
     runs-on: ubuntu-latest
 
@@ -20,35 +21,26 @@ jobs:
           +(migrations)/*.sql
         SEPARATOR: ", "
 
-  second-step:
-    runs-on: ubuntu-latest
-    if: ${{env.GIT_DIFF_FILTERED}} != ''
-    needs: check-migrations
-    steps:
-      - name: Test
-        run: echo "Run migrations..."
+    - name: Test
+      if: ${{env.GIT_DIFF_FILTERED}} != ''
+      run: echo "Run migrations..."
 
-  add-comment:
-    permissions: write-all
-    runs-on: ubuntu-latest
-    needs: second-step 
-    steps:
-      - name: Add PR comment
-        uses: actions/github-script@v6
-        env:
-          MIGRATION_FILES: ${{env.GIT_DIFF_FILTERED}}
-        with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            const { MIGRATION_FILES } = process.env
-            const emoji = MIGRATION_FILES === '' ? ':+1' : ':eyes'
+    - name: Add PR comment
+      uses: actions/github-script@v6
+      env:
+        MIGRATION_FILES: ${{env.GIT_DIFF_FILTERED}}
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          const { MIGRATION_FILES } = process.env
+          const emoji = MIGRATION_FILES === '' ? ':+1' : ':eyes'
 
-            if (MIGRATION_FILES) {
-              const payload = {
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.issue.number,
-                body: `Found migrations: ${emoji}` + MIGRATION_FILES
-              }
-              await github.rest.issues.createComment(payload)
+          if (MIGRATION_FILES) {
+            const payload = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `Found migrations: ${emoji}` + MIGRATION_FILES
             }
+            await github.rest.issues.createComment(payload)
+          }
