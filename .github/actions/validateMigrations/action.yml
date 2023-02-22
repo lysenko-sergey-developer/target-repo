@@ -21,6 +21,7 @@ runs:
 
     - name: Create MySQL DB
       if: ${{env.GIT_DIFF_FILTERED}}
+      shell: bash
       run: |
         sudo systemctl start mysql.service
         && MYSQL_PWD=root mysql -u root -e "create database testdb;"
@@ -28,14 +29,11 @@ runs:
         && MYSQL_PWD=root mysql -u root -e "insert into testdb.users (name, email, sub) values ('aa', 'bb', 'cc');"
         && MYSQL_PWD=root mysql -u root -e "select * from testdb.users;"
 
-    - name 
-    
     - name: Add PR comment
       uses: actions/github-script@v6
       env:
         MIGRATION_FILES: ${{env.GIT_DIFF_FILTERED}}
       with:
-        github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
           const { MIGRATION_FILES } = process.env
           if (MIGRATION_FILES) {
@@ -47,4 +45,3 @@ runs:
             }
             await github.rest.issues.createComment(payload)
           }
-          return MIGRATION_FILES
