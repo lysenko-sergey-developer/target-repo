@@ -17,9 +17,9 @@ jobs:
       id: get-changed-files
       run: echo "::set-output name=changed_files::$(git diff --name-only HEAD^ HEAD)"
 
-      ## - name: Show new files between branches
-      ##   if: contains(steps.get-changed-files.outputs.target_branch, './migrations')
-      ##   run: echo "New migrations found!"
+    - name: Show new files between branches
+      if: contains(steps.get-changed-files.outputs.target_branch, './migrations')
+      run: echo "${{ steps.get-changed-files.outputs.target_branch }}"
 
     - name: Add PR comment
       if: startsWith(steps.get-changed-files.outputs.changed_files, 'migrations') && endsWith(steps.get-changed-files.outputs.changed_files, '.sql')
