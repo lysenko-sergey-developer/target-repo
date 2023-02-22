@@ -1,0 +1,22 @@
+name: Check for new migrations
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  check-migrations:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Get list of changed files
+      id: get-changed-files
+      run: echo "::set-output name=files::$(git diff --name-only HEAD^ HEAD)"
+
+    - name: Check for changes in migrations
+      if: ${{ steps.get-changed-files.outputs.files.contains('migrations') }}
+      run: echo "New migrations found!"
