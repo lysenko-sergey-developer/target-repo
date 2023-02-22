@@ -7,6 +7,7 @@ on:
 jobs:
   compare-branches:
     steps:
-      uses: ./.github/actions/validateMigrations
-      with:
-        folder: 'some/folder/with/migration'
+      - name: Run check migrations action
+        uses: ./.github/actions/validateMigrations
+        with:
+          folder: 'some/folder/with/migration'
