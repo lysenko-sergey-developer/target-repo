@@ -1,3 +1,9 @@
+name: Check migrations
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
 jobs:
   check-migrations:
     permissions: write-all
@@ -21,3 +27,26 @@ jobs:
       - name: Test
         if: ${{env.GIT_DIFF_FILTERED}} != ''
         echo: "Added migration!"
+
+  second-step:
+    needs: second-step 
+    steps:
+      - name: Add PR comment
+        uses: actions/github-script@v6
+        env:
+          MIGRATION_FILES: ${{env.GIT_DIFF_FILTERED}}
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const { MIGRATION_FILES } = process.env
+            const emoji = MIGRATION_FILES === '' ? ':+1' : ':eyes'
+
+            if (MIGRATION_FILES) {
+              const payload = {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: `Found migrations: ${emoji}` + MIGRATION_FILES
+              }
+              await github.rest.issues.createComment(payload)
+            }
