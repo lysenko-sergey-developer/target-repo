@@ -8,7 +8,7 @@ inputs:
     default: '/migration/db'
 
 runs:
-  using: "node16"
+  using: "docker"
   steps:
     - name: Checkout code
       uses: actions/checkout@v3
