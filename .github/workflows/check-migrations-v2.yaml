@@ -5,10 +5,42 @@ on:
     types: [opened, reopened, synchronize]
 
 jobs:
-  compare-branches:
+  check-migrations:
+    permissions: write-all
     runs-on: ubuntu-latest
+
     steps:
-      - name: Run check migrations action
-        uses: ./.github/actions/validateMigrations
-        with:
-          folder: 'some/folder/with/migration'
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Get target branch name
+      uses: technote-space/get-diff-action@v6
+
+      with:
+        PATTERNS: |
+          +(migrations)/*.sql
+        SEPARATOR: ", "
+
+    - name: Test
+      if: ${{env.GIT_DIFF_FILTERED}} != ''
+      run: echo "Run migrations..."
+
+    - name: Add PR comment
+      uses: actions/github-script@v6
+      env:
+        MIGRATION_FILES: ${{env.GIT_DIFF_FILTERED}}
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          const { MIGRATION_FILES } = process.env
+          const emoji = MIGRATION_FILES === '' ? ':+1' : ':eyes'
+
+          if (MIGRATION_FILES) {
+            const payload = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: `Found migrations: ${emoji}` + MIGRATION_FILES
+            }
+            await github.rest.issues.createComment(payload)
+          }
