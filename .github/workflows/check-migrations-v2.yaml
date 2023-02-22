@@ -17,13 +17,14 @@ jobs:
       uses: technote-space/get-diff-action@v6
       with:
         PATTERN: |
-          +migrations/**.sql
+          migrations/*.sql
 
     - name: Show new files between branches
       run: echo "${{ env.MATCHED_FILES }}"
 
     - name: Add PR comment
       uses: actions/github-script@v4
+      if: env.MATCHED_FILES
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
@@ -31,7 +32,7 @@ jobs:
             owner: context.repo.owner,
             repo: context.repo.repo,
             issue_number: context.issue.number,
-            body: 'Found a migration! :tada:. ${{env.MATCHED_FILES }}'
+            body: 'Found a migration! :tada:. ${{ env.MATCHED_FILES }}'
           }
           await github.issues.createComment(payload)
 
