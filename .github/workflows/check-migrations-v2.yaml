@@ -26,7 +26,7 @@ jobs:
     steps:
       - name: Test
         if: ${{env.GIT_DIFF_FILTERED}} != ''
-        echo: "Added migration!"
+        run: echo "Run migrations..."
 
   add-comment:
     needs: second-step 
