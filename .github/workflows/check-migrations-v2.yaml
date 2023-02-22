@@ -1,0 +1,37 @@
+name: Compare branches
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+jobs:
+  compare-branches:
+    permissions: write-all
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Get target branch name
+      id: get-changed-files
+      run: echo "::set-output name=changed_files::$(git diff --name-only HEAD^ HEAD)"
+
+      ## - name: Show new files between branches
+      ##   if: contains(steps.get-changed-files.outputs.target_branch, './migrations')
+      ##   run: echo "New migrations found!"
+
+    - name: Add PR comment
+      if: startsWith(steps.get-changed-files.outputs.changed_files, 'migrations') && endsWith(steps.get-changed-files.outputs.changed_files, '.sql')
+      uses: actions/github-script@v4
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const payload = {
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+            body: 'Found a migration! :tada:. ${{ steps.get-changed-files.outputs.changed_files }}'
+          }
+          await github.issues.createComment(payload)
+
