@@ -15,9 +15,9 @@ jobs:
 
     - name: Get target branch name
     - uses: technote-space/get-diff-action@v6
-        with:
-          PATTERN: |
-            +migrations/**.sql
+      with:
+        PATTERN: |
+          +migrations/**.sql
 
     - name: Show new files between branches
       run: echo "${{ env.MATCHED_FILES }}"
