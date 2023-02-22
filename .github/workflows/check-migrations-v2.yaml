@@ -28,7 +28,7 @@ jobs:
         if: ${{env.GIT_DIFF_FILTERED}} != ''
         echo: "Added migration!"
 
-  second-step:
+  add-comment:
     needs: second-step 
     steps:
       - name: Add PR comment
