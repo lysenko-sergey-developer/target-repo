@@ -16,23 +16,25 @@ jobs:
     - name: Get target branch name
       uses: technote-space/get-diff-action@v6
       with:
-        PATTERN: |
-          migrations/*.sql
-
-    - name: Show new files between branches
-      run: echo "${{ env.MATCHED_FILES }}"
+        PATTERNS: |
+          +(migrations)/*.sql
+        SEPARATOR: ", "
 
     - name: Add PR comment
-      uses: actions/github-script@v4
-      if: env.MATCHED_FILES
+      uses: actions/github-script@v6
+      env:
+        MIGRATION_FILES: ${{env.GIT_DIFF_FILTERED}}
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        github-token: ${{secrets.GITHUB_TOKEN}}
         script: |
-          const payload = {
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: context.issue.number,
-            body: 'Found a migration! :tada:. ${{ env.MATCHED_FILES }}'
+          const { MIGRATION_FILES } = process.env
+          if (MIGRATION_FILES) {
+            const payload = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: 'Found a migration: ' + MIGRATION_FILES
+            }
+            await github.rest.issues.createComment(payload)
           }
-          await github.issues.createComment(payload)
 
