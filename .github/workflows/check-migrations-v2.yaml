@@ -23,7 +23,6 @@ jobs:
       run: echo "${{ env.MATCHED_FILES }}"
 
     - name: Add PR comment
-      if: startsWith(steps.get-changed-files.outputs.changed_files, 'migrations') && endsWith(steps.get-changed-files.outputs.changed_files, '.sql')
       uses: actions/github-script@v4
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -32,7 +31,7 @@ jobs:
             owner: context.repo.owner,
             repo: context.repo.repo,
             issue_number: context.issue.number,
-            body: 'Found a migration! :tada:. ${{ steps.get-changed-files.outputs.changed_files }}'
+            body: 'Found a migration! :tada:. ${{env.MATCHED_FILES }}'
           }
           await github.issues.createComment(payload)
 
