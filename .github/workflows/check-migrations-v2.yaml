@@ -6,7 +6,6 @@ on:
 
 jobs:
   check-migrations:
-    permissions: write-all
     runs-on: ubuntu-latest
 
     steps:
@@ -22,13 +21,16 @@ jobs:
         SEPARATOR: ", "
 
   second-step:
+    runs-on: ubuntu-latest
+    if: ${{env.GIT_DIFF_FILTERED}} != ''
     needs: check-migrations
     steps:
       - name: Test
-        if: ${{env.GIT_DIFF_FILTERED}} != ''
         run: echo "Run migrations..."
 
   add-comment:
+    permissions: write-all
+    runs-on: ubuntu-latest
     needs: second-step 
     steps:
       - name: Add PR comment
