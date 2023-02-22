@@ -15,7 +15,7 @@ jobs:
 
     - name: Get target branch name
       id: get-changed-files
-      run: echo "::set-output name=changed_files::$(git diff --name-only HEAD^ HEAD)"
+      run: echo "::set-output name=changed_files::$(git diff --name-only HEAD main)"
 
     - name: Show new files between branches
       run: echo "${{ steps.get-changed-files.outputs.target_branch }}"
