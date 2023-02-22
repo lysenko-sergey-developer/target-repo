@@ -1,0 +1,50 @@
+name: 'DB Migration Checker'
+description: 'Validate that DB migrations works properly'
+
+inputs:
+  folder:
+    description: 'Define folder where migrations is located'
+    required: false
+    default: '/migration/db'
+
+runs:
+  steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Get target branch name
+      uses: technote-space/get-diff-action@v6
+      with:
+        PATTERNS: |
+          +(migrations)/*.sql
+        SEPARATOR: ", "
+
+    - name: Create MySQL DB
+      if: ${{env.GIT_DIFF_FILTERED}}
+      run: |
+        sudo systemctl start mysql.service
+        && MYSQL_PWD=root mysql -u root -e "create database testdb;"
+        && MYSQL_PWD=root mysql -u root testdb < ${{ github.workspace }}/migration/db/0_0_1__users_advertisers_connection.sql
+        && MYSQL_PWD=root mysql -u root -e "insert into testdb.users (name, email, sub) values ('aa', 'bb', 'cc');"
+        && MYSQL_PWD=root mysql -u root -e "select * from testdb.users;"
+
+    - name 
+    
+    - name: Add PR comment
+      uses: actions/github-script@v6
+      env:
+        MIGRATION_FILES: ${{env.GIT_DIFF_FILTERED}}
+      with:
+        github-token: ${{secrets.GITHUB_TOKEN}}
+        script: |
+          const { MIGRATION_FILES } = process.env
+          if (MIGRATION_FILES) {
+            const payload = {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: 'Migrations were success :+1 ' + MIGRATION_FILES
+            }
+            await github.rest.issues.createComment(payload)
+          }
+          return MIGRATION_FILES
