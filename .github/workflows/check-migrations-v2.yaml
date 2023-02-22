@@ -1,4 +1,4 @@
-name: Compare branches
+name: Check migrations
 
 on:
   pull_request:
@@ -6,35 +6,9 @@ on:
 
 jobs:
   compare-branches:
-    permissions: write-all
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v3
-
-    - name: Get target branch name
-      uses: technote-space/get-diff-action@v6
-      with:
-        PATTERNS: |
-          +(migrations)/*.sql
-        SEPARATOR: ", "
-
-    - name: Add PR comment
-      uses: actions/github-script@v6
-      env:
-        MIGRATION_FILES: ${{env.GIT_DIFF_FILTERED}}
-      with:
-        github-token: ${{secrets.GITHUB_TOKEN}}
-        script: |
-          const { MIGRATION_FILES } = process.env
-          if (MIGRATION_FILES) {
-            const payload = {
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body: 'Found a migration: ' + MIGRATION_FILES
-            }
-            await github.rest.issues.createComment(payload)
-          }
-
+      - name: Run check migrations action
+        uses: ./.github/actions/validateMigrations
+        with:
+          folder: 'some/folder/with/migration'
